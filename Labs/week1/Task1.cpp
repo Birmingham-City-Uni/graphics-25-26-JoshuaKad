@@ -1,12 +1,22 @@
 #include <iostream>
 #include <lodepng.h>
+#include <filesystem>
 
+
+void setPixel(int x, int y, int r, int g, int b, int a, std::vector<uint8_t>& imageBuffer, int width, int nChannels) {
+	int pixelIdx = x + y * width;
+	imageBuffer[pixelIdx * nChannels + 0] = r; // Set red pixel values to 0
+	imageBuffer[pixelIdx * nChannels + 1] = g; // Set green pixel values to 255 (full brightness)
+	imageBuffer[pixelIdx * nChannels + 2] = b; // Set blue pixel values to 255 (full brightness)
+	imageBuffer[pixelIdx * nChannels + 3] = a; // Set alpha (transparency) pixel values to 255 (fully opaque)
+}
 
 int main()
 {
 	std::string outputFilename = "output.png";
 
 	const int width = 1920, height = 1080;
+	const int x_0 = width / 2, y_0 = height / 2;
 	const int nChannels = 4;
 
 	// Setting up an image buffer
@@ -16,15 +26,25 @@ int main()
 	std::vector<uint8_t> imageBuffer(height*width*nChannels);
 
 	// This for loop sets all the pixels of the image to a cyan colour. 
-	for(int y = 0; y < height; ++y) 
+	for(int y = 0; y < 540; ++y) 
 		for (int x = 0; x < width; ++x) {
-			int pixelIdx = x + y * width;
-			imageBuffer[pixelIdx * nChannels + 0] = 0; // Set red pixel values to 0
-			imageBuffer[pixelIdx * nChannels + 1] = 255; // Set green pixel values to 255 (full brightness)
-			imageBuffer[pixelIdx * nChannels + 2] = 255; // Set blue pixel values to 255 (full brightness)
-			imageBuffer[pixelIdx * nChannels + 3] = 255; // Set alpha (transparency) pixel values to 255 (fully opaque)
+			setPixel(x, y, 0, 255, 255, 255, imageBuffer, width, nChannels);
 		}
 
+	for (int y = 540; y < height; ++y)
+		for (int x = 0; x < width; ++x) {
+			setPixel(x, y, 255, 255, 0, 255, imageBuffer, width, nChannels);
+		}
+
+	for (int y = 0; y < height; ++y)
+		for (int x = 0; x < width; ++x) {
+			if (sqrt((x - x_0) * (x - x_0) + (y - y_0) * (y - y_0)) < 200) {
+				setPixel(x, y, 0, 0, 0, 255, imageBuffer, width, nChannels);
+			}
+		}
+
+
+	
 	/// *** Lab Tasks ***
 	// * Task 1: Try adapting the code above to set the lower half of the image to be a green colour.
 	// * Task 2: Doing the maths above to work out indices is a bit annoying! Write your own setPixel function.
@@ -58,6 +78,11 @@ int main()
 		std::cout << "lodepng error encoding image: " << lodepng_error_text(errorCode) << std::endl;
 		return errorCode;
 	}
+
+	int uncompressedSize = width * height * nChannels;
+	uintmax_t compressedSize = std::filesystem::file_size("output.png");
+	std::cout << "Uncompressed size = " + std::to_string(uncompressedSize) << std::endl;
+	std::cout << "Compressed size = " + std::to_string(compressedSize) << std::endl;
 
 	return 0;
 }
