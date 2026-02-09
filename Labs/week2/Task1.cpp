@@ -64,6 +64,25 @@ int main()
 	{
 		std::getline(bunnyFile, line);
 		// *** YOUR CODE HERE ***
+		std::stringstream ss(line);
+
+		char type;
+		ss >> type;
+
+		if (type == 'v')
+		{
+			Vector3 v;
+			ss >> v.x() >> v.y() >> v.z();
+
+			vertices.push_back(v);
+
+			// Optional debug output
+			std::cout << "Loaded vertex: "
+				<< v.x() << ", "
+				<< v.y() << ", "
+				<< v.z() << std::endl;
+		}
+
 
 		// Process each line of the file
 		// Load it into a new Vector3, if the line starts with a V

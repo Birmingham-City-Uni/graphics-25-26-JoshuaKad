@@ -34,6 +34,7 @@ public:
 	{
 		// YOUR CODE HERE
 		x_ + other.x_, y_ + other.y_, z_ + other.z_;
+		return Vector3(x_, y_, z_);
 	}
 
 	// Multiply the vector by a scalar.
@@ -41,6 +42,7 @@ public:
 	{
 		// YOUR CODE HERE
 		x_* scalar, y_* scalar, z_* scalar;
+		return Vector3(x_, y_, z_);
 	}
 
 	// Get a component of the vector
