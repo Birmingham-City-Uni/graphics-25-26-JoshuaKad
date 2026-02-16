@@ -76,7 +76,6 @@ int main()
 
 			vertices.push_back(v);
 
-			// Optional debug output
 			std::cout << "Loaded vertex: "
 				<< v.x() << ", "
 				<< v.y() << ", "
@@ -102,6 +101,11 @@ int main()
 		//         big enough to see.
 
 		// *** YOUR CODE HERE ***
+		
+		int x = static_cast<int>(v.x() * 200 + width / 2);
+		int y = static_cast<int>(v.y() * -200 + height / 2);
+
+		setPixel(imageBuffer, x, y, width, height, 255, 255, 255);
 	}
 
 
