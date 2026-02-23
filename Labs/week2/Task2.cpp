@@ -26,18 +26,26 @@ void drawLine(std::vector<uint8_t>& image, int width, int height, int startX, in
 	// *** YOUR CODE HERE
 	//Step 1: work out the gradient
 	float gradient;
+	
 
 	// Step 2: check if it's steep (i.e. absolute value bigger than 1;)
-	bool steep;
+	bool steep = std::abs(endY - startY) > std::abs(endX - startX);
+	
 
 	if (steep) {
 		// Step 3: The steep version of the code, iterating over Y
 		// First, make sure that startY is less than endY. 
 		// If they're in the wrong order, swap both X and Y.
+		if (startY > endY) {
+			std::swap(startY, endY);
+			std::swap(startX, endX);
+		}
 
 		// Now, iterate from startY to endY. 
+
 		for (int y = startY; y <= endY; ++y) {
 			// Draw the line, following the formula!
+			setPixel(image, y, x, width, height, 255, 255, 255);
 		}
 	}
 	else {
