@@ -36,8 +36,13 @@ Eigen::Matrix4f projectionMatrix(int height, int width, float horzFov = 70.f*M_P
 	// Make a projection matrix following the formulation in the lecture slides, and using the provided parameters.
 	// First, work out vertical FoV based on the horizontal FoV:
 	float vertFov = 0.f;
+	vertFov = (horzFov * height) / width;
 	// Now construct the matrix.
 	Eigen::Matrix4f projection;
+	projection << 1.f / tanf(horzFov * 0.5f), 0, 0, 0,
+				  0, 1.f / tanf(vertFov / .5f), 0, 0,
+				  0, 0, zFar / (zFar - zNear), -(zFar * zNear) / (zFar - zNear),
+				0, 0, 1.f, 0;
 	return projection;
 	// *** END YOUR CODE ***
 }
@@ -244,6 +249,21 @@ void drawMesh(std::vector<unsigned char>& image,
 		Eigen::Vector4f vClip1 = Eigen::Vector4f::Zero();
 		Eigen::Vector4f vClip2 = Eigen::Vector4f::Zero();
 
+		vClip0 = worldToClip * vec3ToVec4(t.verts[0]);
+		vClip1 = worldToClip * vec3ToVec4(t.verts[1]);
+		vClip2 = worldToClip * vec3ToVec4(t.verts[2]);
+
+		vClip0 /= vClip0.w();
+		vClip1 /= vClip1.w();
+		vClip2 /= vClip2.w();
+
+		if (outsideClipBox(vClip0) ||
+			outsideClipBox(vClip1) || 
+			outsideClipBox(vClip2)) {
+			continue;
+		}
+
+
 		// Check that all 3 vertices are in the clip box (-1 to 1 in x, y and z) and if not,
 		// skip drawing this triangle.
 		// Hint: I've made a function outsideClipBox in LinAlg.hpp to help with this!
@@ -254,6 +274,19 @@ void drawMesh(std::vector<unsigned char>& image,
 		t.screen[0] = Eigen::Vector3f::Zero();
 		t.screen[1] = Eigen::Vector3f::Zero();
 		t.screen[2] = Eigen::Vector3f::Zero();
+
+		t.screen[0].x() = width * ((vClip0.x() + 1.f) / 2);
+		t.screen[0].y() = height * ((1.f - vClip0.y()) / 2);
+		t.screen[0].z() = vClip0.z();
+
+		t.screen[1].x() = width * ((vClip1.x() + 1.f) / 2);
+		t.screen[1].y() = height * ((1.f - vClip1.y()) / 2);
+		t.screen[1].z() = vClip1.z();
+
+		t.screen[2].x() = width * ((vClip2.x() + 1.f) / 2);
+		t.screen[2].y() = height * ((1.f - vClip2.y()) / 2);
+		t.screen[2].z() = vClip2.z();
+
 		// *** END YOUR CODE ***
 
 		// transform the normals (using the inverse transpose of the upper 3x3 block)
