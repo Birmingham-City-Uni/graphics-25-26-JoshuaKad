@@ -1,6 +1,7 @@
 // This define is necessary to get the M_PI constant.
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <algorithm>
 
 #include <iostream>
 #include <lodepng.h>
@@ -40,7 +41,7 @@ Eigen::Matrix4f projectionMatrix(int height, int width, float horzFov = 70.f*M_P
 	// Now construct the matrix.
 	Eigen::Matrix4f projection;
 	projection << 1.f / tanf(horzFov * 0.5f), 0, 0, 0,
-				  0, 1.f / tanf(vertFov / .5f), 0, 0,
+				  0, 1.f / tanf(vertFov * .5f), 0, 0,
 				  0, 0, zFar / (zFar - zNear), -(zFar * zNear) / (zFar - zNear),
 				0, 0, 1.f, 0;
 	return projection;
@@ -114,17 +115,20 @@ void drawTriangle(std::vector<uint8_t>& image, int width, int height,
 			// First, work out the depth of this location in screen space. 
 			// We saved the clip space z values in t.screen[0].z(), t.screen[1].z() and t.screen[2].z.
 			// Use barycentric interpolation on these to work out the depth of this pixel.
-			float depth = 0.f;
+			float depth = t.screen[0].z() * b0 + t.screen[1].z() * b1 + t.screen[2].z() * b2;
+			
 
 			// Work out where to sample in the zBuffer. Remember the zBuffer has only one channel,
 			// so your index should be based on the pixel's x and y locations, and the width of the 
 			// z buffer only.
-			int depthIdx = 0;
-
+			int depthIdx = x + y * width;
+			
 			// If your depth is bigger than the current depth, skip drawing this pixel.
 			// Otherwise, replace the zBuffer value at depthIdx with this depth.
 			// ADD YOUR OWN CODE TO DO THIS HERE
+			if (depth > zBuffer[depthIdx]) { continue; }
 
+			zBuffer[depthIdx] = depth;
 			// *** END YOUR CODE ***
 
 			Eigen::Vector3f normP = t.norms[0] * b0 + t.norms[1] * b1 + t.norms[2] * b2;
@@ -140,11 +144,16 @@ void drawTriangle(std::vector<uint8_t>& image, int width, int height,
 			// Use barycentric interpolation!
 			Eigen::Vector2f texP = Eigen::Vector2f::Zero();
 
+			texP = t.texs[0] * b0 + t.texs[1] * b1 + t.texs[2] * b2;
+
 			// Convert this coordinate to a point in texture space
 			// To do so, multiply by the texWidth and texHeight to get to the correct range.
 			// Don't forget to flip the y coordinates! 
-			int texR = 0;
-			int texC = 0;
+			int texR = (1-texP.y()) * texHeight;
+			int texC = texP.x() * texWidth;
+
+			texR = std::min(std::max(texR, 0), texHeight - 1);
+			texC = std::min(std::max(texC, 0), texWidth - 1);
 			// Handle the case where texR or texC end up outside the image!
 			// There are different ways you could do this - for example using 
 			// the modulo (%) operator to wrap around, or clamping to the edges.
@@ -152,13 +161,13 @@ void drawTriangle(std::vector<uint8_t>& image, int width, int height,
 			// that 0 <= texC < texWidth and 0 <= texR < texHeight.
 
 			// Get the value from the texture (hint: use the getPixel function on the albedoTexture).
-			Color texColor{ 255,255,255,255 };
+			Color texColor = getPixel(albedoTexture, texC, texR, texWidth, texHeight);
 
 			// Convert it into an Eigen::Vector3f as an albedo
 			// (Optional bonus task, if you checked out the slides on gamma correction:
 			// gamma correct this colour, so the texture doesn't appear overly bright.
 			// should you raise to the power 1/2.2, or 2.2?)
-			Eigen::Vector3f albedo = Eigen::Vector3f::Zero();
+			Eigen::Vector3f albedo = Eigen::Vector3f(texColor.r / 255.f, texColor.g / 255.f, texColor.b / 255.f);
 
 			// *** END YOUR CODE ***
 
@@ -276,15 +285,15 @@ void drawMesh(std::vector<unsigned char>& image,
 		t.screen[2] = Eigen::Vector3f::Zero();
 
 		t.screen[0].x() = width * ((vClip0.x() + 1.f) / 2);
-		t.screen[0].y() = height * ((1.f - vClip0.y()) / 2);
+		t.screen[0].y() = height * ((-vClip0.y() + 1.f) / 2);
 		t.screen[0].z() = vClip0.z();
 
 		t.screen[1].x() = width * ((vClip1.x() + 1.f) / 2);
-		t.screen[1].y() = height * ((1.f - vClip1.y()) / 2);
+		t.screen[1].y() = height * ((-vClip1.y() + 1.f) / 2);
 		t.screen[1].z() = vClip1.z();
 
 		t.screen[2].x() = width * ((vClip2.x() + 1.f) / 2);
-		t.screen[2].y() = height * ((1.f - vClip2.y()) / 2);
+		t.screen[2].y() = height * ((-vClip2.y() + 1.f) / 2);
 		t.screen[2].z() = vClip2.z();
 
 		// *** END YOUR CODE ***
@@ -340,8 +349,11 @@ int main()
 	// The main important task = set up the worldToCamera and worldToClip matrices here!
 	// Set up worldToCamera, based on cameraToWorld above
 	Eigen::Matrix4f worldToCamera;
+	worldToCamera = cameraToWorld.inverse();
+
 	// Set up worldToClip, using the projection and worldToCamera matrices
 	Eigen::Matrix4f worldToClip;
+	worldToClip = projection * worldToCamera;
 
 	// *** END YOUR CODE ***
 
