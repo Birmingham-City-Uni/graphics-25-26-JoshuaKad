@@ -19,6 +19,26 @@
 #include "Model.hpp"
 #include <fstream>
 
+Eigen::Matrix4f translationMatrix(const Eigen::Vector3f& t)
+{
+	// *** Your code here ***
+	Eigen::Matrix4f output = Eigen::Matrix4f::Identity();
+	output.block<3, 1>(0, 3) = t;
+	return output;
+}
+
+Eigen::Matrix4f rotateYMatrix(float theta)
+{
+	// *** Your code here ***
+	Eigen::Matrix4f output;
+	output <<
+		cosf(theta), 0, sinf(theta), 0.f,
+		0.f, 1.f, 0.f, 0.f,
+		-sinf(theta), 0.f, cosf(theta), 0.f,
+		0.f, 0.f, 0.f, 1.f;
+	return output;
+}
+
 /// <summary>
 /// Load a JSON config file using the nlohmann library.
 /// </summary>
@@ -66,13 +86,28 @@ int main(int argc, char* argv[]) {
 	// *** Load shaders and textures ***
 	std::vector<uint8_t> spotTexture;
 	unsigned int width, height;
-	lodepng::decode(spotTexture, width, height, "../models/spot.png");
+	lodepng::decode(spotTexture, width, height, "../models/Final_Texture.png");
+
+	std::vector<uint8_t> tableTexture;
+	unsigned int tWidth, tHeight;
+	lodepng::decode(tableTexture, tWidth, tHeight, "../models/TableTexture.png");
+
+	std::vector<uint8_t> mapTexture;
+	unsigned int mWidth, mHeight;
+	lodepng::decode(mapTexture, mWidth, mHeight, "../models/MapTexture.png");
+
+	std::vector<uint8_t> draculaTexture;
+	unsigned int dWidth, dHeight;
+	lodepng::decode(draculaTexture, dWidth, dHeight, "../models/DraculaTexture.png");
+
+	std::vector<uint8_t> chairTexture;
+	unsigned int cWidth, cHeight;
+	lodepng::decode(chairTexture, cWidth, cHeight, "../models/chairTexture.png");
 
 	LambertianShader redLambertianShader(red);
 	PhongShader bluePlasticShader(blue, Eigen::Vector3f(1.f, 1.f, 1.f), 100.f);
 	LambertianShader aquaLambertianShader(aqua);
 	LambertianShader lavenderLambertianShader(lavender);
-	TexturedLambertianShader spotShader(&spotTexture, width, height);
 	MirrorShader mirrorShader;
 	TexCoordTestShader texCoordTestShader;
 
@@ -81,8 +116,29 @@ int main(int argc, char* argv[]) {
 
 	// Optional code: here's how to add the spot mesh to the scene, using a BVH
 	// Try enabling this and comparing it to the non-BVH version below!
-	Model spotModel("../models/spot.obj");
-	scene.renderables.push_back(std::make_shared<BVHNode>(spotModel, &spotShader, 4, rotateY(M_PI / 4.0f)));
+	Model spotModel("../models/SquirrelGirlV2.obj");
+	Model tableModel("../models/Table.obj");
+	Model mapModel("../models/Map.obj");
+	Model draculaModel("../models/Dracula.obj");
+	Model chairModel("../models/Chair.obj");
+
+	TexturedLambertianShader spotShader(&spotTexture, width, height);
+	TexturedLambertianShader tableShader(&tableTexture, tWidth, tHeight);
+	TexturedLambertianShader mapShader(&mapTexture, mWidth, mHeight);
+	TexturedLambertianShader draculaShader(&draculaTexture, dWidth, dHeight);
+	TexturedLambertianShader chairShader(&chairTexture, cWidth, cHeight);
+
+	Eigen::Matrix4f spotTransform = translationMatrix(Eigen::Vector3f(-0.5f, -2.0f, 3.5f)) * rotateYMatrix(M_PI);
+	Eigen::Matrix4f tableTransform = translationMatrix(Eigen::Vector3f(0.0f, -2.0f, 6.0f)) * rotateYMatrix(M_PI);
+	Eigen::Matrix4f mapTransform = translationMatrix(Eigen::Vector3f(0.0f, -2.0f, 6.0f)) * rotateYMatrix(M_PI);
+	Eigen::Matrix4f draculaTransform = translationMatrix(Eigen::Vector3f(0.0f, -2.0f, 6.0f)) * rotateYMatrix(M_PI);
+	Eigen::Matrix4f chairTransform = translationMatrix(Eigen::Vector3f(-2.5f, -2.0f, 5.5f));
+
+	scene.renderables.push_back(std::make_shared<BVHNode>(spotModel, &spotShader, 4, spotTransform));
+	scene.renderables.push_back(std::make_shared<BVHNode>(tableModel, &tableShader, 4, tableTransform));
+	scene.renderables.push_back(std::make_shared<BVHNode>(mapModel, &mapShader, 4, mapTransform));
+	scene.renderables.push_back(std::make_shared<BVHNode>(draculaModel, &draculaShader, 4, draculaTransform));
+	scene.renderables.push_back(std::make_shared<BVHNode>(chairModel, &chairShader, 4, chairTransform));
 
 	// Here's how to add the mesh without using the BVH.
 	// Try comparing performance to the BVH version above.
@@ -95,7 +151,7 @@ int main(int argc, char* argv[]) {
 
 	std::vector<std::unique_ptr<Light>> lightSources;
 	lightSources.push_back(std::make_unique<PointLight>(Eigen::Vector3f(-1.f, 3.f, -1.f), 3.f * Eigen::Vector3f(1.f, 1.f, 1.f)));
-	lightSources.push_back(std::make_unique<DirectionalLight>(Eigen::Vector3f(0.f, -1.f, 1.f), .5f * Eigen::Vector3f(1.f, 1.f, 1.f)));
+	lightSources.push_back(std::make_unique<DirectionalLight>(Eigen::Vector3f(0.f, -1.f, 1.f), 1.f * Eigen::Vector3f(1.f, 1.f, 1.f)));
 
 	// *** Render the scene ***
 

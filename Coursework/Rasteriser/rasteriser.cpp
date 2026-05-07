@@ -9,6 +9,8 @@
 #include "LinAlg.hpp"
 #include "Light.hpp"
 #include "Mesh.hpp"
+#include "Shading.hpp"
+
 
 // ***** WEEK 6 LAB *****
 // Subtask 1: Implement the projectionMatrix function, to make a projection matrix to view your scene!
@@ -41,9 +43,9 @@ Eigen::Matrix4f projectionMatrix(int height, int width, float horzFov = 70.f * M
 	// Now construct the matrix.
 	Eigen::Matrix4f projection;
 	projection << 1.f / tanf(horzFov * 0.5f), 0, 0, 0,
-		0, 1.f / tanf(vertFov * .5f), 0, 0,
-		0, 0, zFar / (zFar - zNear), -(zFar * zNear) / (zFar - zNear),
-		0, 0, 1.f, 0;
+					0, 1.f / tanf(vertFov * .5f), 0, 0,
+					0, 0, zFar / (zFar - zNear), -(zFar * zNear) / (zFar - zNear),
+					0, 0, 1.f, 0;
 	return projection;
 	// *** END YOUR CODE ***
 }
@@ -68,7 +70,9 @@ void drawTriangle(std::vector<uint8_t>& image, int width, int height,
 	std::vector<float>& zBuffer,
 	const Triangle& t,
 	const std::vector<std::unique_ptr<Light>>& lights,
-	const std::vector<uint8_t>& albedoTexture, int texWidth, int texHeight)
+	const std::vector<uint8_t>& albedoTexture, int texWidth, int texHeight,
+	const Eigen::Vector3f& specularColor,
+	float specularExponent, const Eigen::Vector3f& camWorldPos)
 {
 	int minX, minY, maxX, maxY;
 	findScreenBoundingBox(t, width, height, minX, minY, maxX, maxY);
@@ -201,6 +205,47 @@ void drawTriangle(std::vector<uint8_t>& image, int width, int height,
 				color += coeffWiseMultiply(lightIntensity, albedo);
 			}
 
+			// Iterate over lights, and sum to find colour.
+			for (auto& light : lights) {
+
+				// Work out the contribution from this light source, and add it to the color variable.
+
+				// Work out the intensity of this light source, at the point worldP.
+				Eigen::Vector3f lightIntensity = light->getIntensityAt(worldP);
+
+				// We only need to do the following if the light isn't an ambient light.
+				if (light->getType() != Light::Type::AMBIENT) {
+					// Work out the incoming light dir (from the light into the surface point).
+					Eigen::Vector3f incomingLightDir = light->getDirection(worldP);
+					// Work out the view direction (from surface point towards camera). Make sure it's normalized!
+					Eigen::Vector3f viewDir = (camWorldPos - worldP).normalized();
+					// Find the specular term by calling phongSpecularTerm.
+					float specularTerm = phongSpecularTerm(incomingLightDir, normP, viewDir, specularExponent);
+					// *** END YOUR CODE ***
+
+					Eigen::Vector3f specularOut = specularColor * specularTerm;
+					specularOut = coeffWiseMultiply(specularOut, lightIntensity);
+
+					// Take the dot product of the normal with the light direction.
+					float dotProd = normP.dot(-incomingLightDir);
+
+					// We don't want negative light - if dot product less than 0, set it to 0.
+					dotProd = std::max(dotProd, 0.0f);
+
+					// Multiply the light intensity by the dot product.
+					Eigen::Vector3f diffuseOut = lightIntensity * dotProd;
+					diffuseOut = coeffWiseMultiply(diffuseOut, albedo);
+
+					// Add both diffuse and specular components to the colour.
+					color += specularOut;
+					color += diffuseOut;
+				}
+				else {
+					// Light is ambient - just multiply light intensity with albedo.
+					color += coeffWiseMultiply(lightIntensity, albedo);
+				}
+			}
+
 			Color c;
 			// Gamma-correcting colours.
 			c.r = std::min(powf(color.x(), 1 / 2.2f), 1.0f) * 255;
@@ -222,7 +267,8 @@ void drawMesh(std::vector<unsigned char>& image,
 	const Eigen::Matrix4f& modelToWorld,
 	const Eigen::Matrix4f& worldToClip,
 	const std::vector<std::unique_ptr<Light>>& lights,
-	int width, int height)
+	int width, int height, const Eigen::Vector3f& specularColor,
+	float specularExponent, const Eigen::Vector3f& camWorldPos)
 {
 	for (int i = 0; i < mesh.vFaces.size(); ++i) {
 
@@ -307,7 +353,7 @@ void drawMesh(std::vector<unsigned char>& image,
 		t.texs[1] = mesh.texs[mesh.tFaces[i][1]];
 		t.texs[2] = mesh.texs[mesh.tFaces[i][2]];
 
-		drawTriangle(image, width, height, zBuffer, t, lights, albedoTexture, texWidth, texHeight);
+		drawTriangle(image, width, height, zBuffer, t, lights, albedoTexture, texWidth, texHeight, specularColor, specularExponent, camWorldPos);
 	}
 }
 
@@ -316,7 +362,7 @@ int main()
 {
 	std::string outputFilename = "output.png";
 
-	const int width = 512, height = 512;
+	const int width = 1920, height = 1080;
 	const int nChannels = 4;
 
 	// Setting up an image buffer
@@ -346,6 +392,8 @@ int main()
 	// Once your code is working, try changing this to move the camera around!
 	Eigen::Matrix4f cameraToWorld = translationMatrix(Eigen::Vector3f(0.f, 0.8f, 0.f)) * rotateXMatrix(0.4f);
 
+	Eigen::Vector3f camWorldPos = (cameraToWorld * Eigen::Vector4f(0, 0, 0, 1)).block<3, 1>(0, 0);
+
 	// The main important task = set up the worldToCamera and worldToClip matrices here!
 	// Set up worldToCamera, based on cameraToWorld above
 	Eigen::Matrix4f worldToCamera;
@@ -357,7 +405,6 @@ int main()
 
 	// *** END YOUR CODE ***
 
-	std::string bunnyFilename = "../models/stanford_bunny_texmapped.obj";
 
 	std::vector<std::unique_ptr<Light>> lights;
 	// I've already added an ambient light for you!
@@ -367,27 +414,67 @@ int main()
 	lights.emplace_back(new DirectionalLight(Eigen::Vector3f(0.4f, 0.4f, 0.4f), Eigen::Vector3f(1.f, 0.f, 0.0f)));
 	//lights.emplace_back(new SpotLight(Eigen::Vector3f(10.0f, 0.0f, 0.0f), Eigen::Vector3f(0.f, 1.f, 0.0f), Eigen::Vector3f(0, -1, 0), M_PI/8));
 
-	Mesh bunnyMesh = loadMeshFile(bunnyFilename);
+	// Load the mesh and texture.
+	std::string player = "../models/SquirrelGirlV2.obj";
+	Mesh playerMesh = loadMeshFile(player);
+	std::vector<uint8_t> playerTexture;
+	unsigned int playerTexWidth, playerTexHeight;
+	lodepng::decode(playerTexture, playerTexWidth, playerTexHeight, "../models/Final_Texture.png");
 
+	std::string table = "../models/Table.obj";
+	Mesh tableMesh = loadMeshFile(table);
+	std::vector<uint8_t> tableTexture;
+	unsigned int tableTexWidth, tableTexHeight;
+	lodepng::decode(tableTexture, tableTexWidth, tableTexHeight, "../models/TableTexture.png");
 
+	std::string map = "../models/Map.obj";
+	Mesh mapMesh = loadMeshFile(map);
+	std::vector<uint8_t> mapTexture;
+	unsigned int mapTexWidth, mapTexHeight;
+	lodepng::decode(mapTexture, mapTexWidth, mapTexHeight, "../models/MapTexture.png");
+
+	std::string dracula = "../models/Dracula.obj";
+	Mesh draculaMesh = loadMeshFile(dracula);
+	std::vector<uint8_t> draculaTexture;
+	unsigned int draculaTexWidth, draculaTexHeight;
+	lodepng::decode(draculaTexture, draculaTexWidth, draculaTexHeight, "../models/DraculaTexture.png");
+
+	std::string floor = "../models/Floor.obj";
+	Mesh floorMesh = loadMeshFile(floor);
+	std::vector<uint8_t> floorTexture;
+	unsigned int floorTexWidth, floorTexHeight;
+	lodepng::decode(floorTexture, floorTexWidth, floorTexHeight, "../models/FloorTexture.png");
+
+	std::string chair = "../models/Chair.obj";
+	Mesh chairMesh = loadMeshFile(chair);
+	std::vector<uint8_t> chairTexture;
+	unsigned int chairTexWidth, chairTexHeight;
+	lodepng::decode(chairTexture, chairTexWidth, chairTexHeight, "../models/ChairTexture.png");
+
+	// Transform
 	Eigen::Matrix4f bunnyTransform;
+	bunnyTransform = translationMatrix(Eigen::Vector3f(-0.5f, -2.0f, 3.5f)) * rotateYMatrix(M_PI);
+	drawMesh(imageBuffer, zBuffer, playerMesh, playerTexture, playerTexWidth, playerTexHeight, bunnyTransform, worldToClip, lights, width, height, Eigen::Vector3f::Ones() * 1.0f, 10.f, camWorldPos);
 
-	std::vector<uint8_t> bunnyTexture;
-	unsigned int bunnyTexWidth, bunnyTexHeight;
-	lodepng::decode(bunnyTexture, bunnyTexWidth, bunnyTexHeight, "../models/stanford_bunny_albedo.png");
+	Eigen::Matrix4f tableTransform;
+	tableTransform = translationMatrix(Eigen::Vector3f(-0.0f, -2.0f, 6.f)) * rotateYMatrix(M_PI);
+	drawMesh(imageBuffer, zBuffer, tableMesh, tableTexture, tableTexWidth, tableTexHeight, tableTransform, worldToClip, lights, width, height, Eigen::Vector3f::Ones() * 1.0f, 10.f, camWorldPos);
 
-	bunnyTransform = translationMatrix(Eigen::Vector3f(-1.0f, -1.0f, 3.f)) * rotateYMatrix(M_PI);
-	drawMesh(imageBuffer, zBuffer, bunnyMesh, bunnyTexture, bunnyTexWidth, bunnyTexHeight, bunnyTransform, worldToClip, lights, width, height);
-	bunnyTransform = translationMatrix(Eigen::Vector3f(-1.0f, -1.0f, 5.f)) * rotateYMatrix(M_PI);
-	drawMesh(imageBuffer, zBuffer, bunnyMesh, bunnyTexture, bunnyTexWidth, bunnyTexHeight, bunnyTransform, worldToClip, lights, width, height);
-	bunnyTransform = translationMatrix(Eigen::Vector3f(-1.0f, -1.0f, 7.f)) * rotateYMatrix(M_PI);
-	drawMesh(imageBuffer, zBuffer, bunnyMesh, bunnyTexture, bunnyTexWidth, bunnyTexHeight, bunnyTransform, worldToClip, lights, width, height);
-	bunnyTransform = translationMatrix(Eigen::Vector3f(1.0f, -1.0f, 3.f)) * rotateYMatrix(M_PI);
-	drawMesh(imageBuffer, zBuffer, bunnyMesh, bunnyTexture, bunnyTexWidth, bunnyTexHeight, bunnyTransform, worldToClip, lights, width, height);
-	bunnyTransform = translationMatrix(Eigen::Vector3f(1.0f, -1.0f, 5.f)) * rotateYMatrix(M_PI);
-	drawMesh(imageBuffer, zBuffer, bunnyMesh, bunnyTexture, bunnyTexWidth, bunnyTexHeight, bunnyTransform, worldToClip, lights, width, height);
-	bunnyTransform = translationMatrix(Eigen::Vector3f(1.0f, -1.0f, 7.f)) * rotateYMatrix(M_PI);
-	drawMesh(imageBuffer, zBuffer, bunnyMesh, bunnyTexture, bunnyTexWidth, bunnyTexHeight, bunnyTransform, worldToClip, lights, width, height);
+	Eigen::Matrix4f mapTransform;
+	mapTransform = translationMatrix(Eigen::Vector3f(-0.0f, -2.0f, 6.f)) * rotateYMatrix(M_PI);
+	drawMesh(imageBuffer, zBuffer, mapMesh, mapTexture, mapTexWidth, mapTexHeight, mapTransform, worldToClip, lights, width, height, Eigen::Vector3f::Ones() * 1.0f, 10.f, camWorldPos);
+
+	Eigen::Matrix4f draculaTransform;
+	draculaTransform = translationMatrix(Eigen::Vector3f(-0.0f, -2.0f, 6.f)) * rotateYMatrix(M_PI);
+	drawMesh(imageBuffer, zBuffer, draculaMesh, draculaTexture, draculaTexWidth, draculaTexHeight, draculaTransform, worldToClip, lights, width, height, Eigen::Vector3f::Ones() * 1.0f, 10.f, camWorldPos);
+
+	Eigen::Matrix4f chairTransform;
+	chairTransform = translationMatrix(Eigen::Vector3f(-2.5f, -2.0f, 5.5f));
+	drawMesh(imageBuffer, zBuffer, chairMesh, chairTexture, chairTexWidth, chairTexHeight, chairTransform, worldToClip, lights, width, height, Eigen::Vector3f::Ones() * 1.0f, 10.f, camWorldPos);
+
+	Eigen::Matrix4f floorTransform;
+	floorTransform = translationMatrix(Eigen::Vector3f(0.0f, -3.0f, 3.f)) * rotateYMatrix(M_PI);
+	//drawMesh(imageBuffer, zBuffer, floorMesh, floorTexture, floorTexWidth, floorTexHeight, floorTransform, worldToClip, lights, width, height, Eigen::Vector3f::Ones() * 1.0f, 10.f, camWorldPos);
 
 	// For debug - draw point lights as colored circles so we can see where they are
 	drawPointLights(imageBuffer, width, height, lights);

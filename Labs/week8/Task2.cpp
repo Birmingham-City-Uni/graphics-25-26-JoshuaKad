@@ -107,24 +107,27 @@ void drawTriangle(std::vector<uint8_t>& image, int width, int height,
 
 			// Get the depths from the camera-space position of the 3 corners.
 			float depth0 = 0.f, depth1 = 0.f, depth2 = 0.f;
+			depth0 = t.cam[0].z();
+			depth1 = t.cam[1].z();
+			depth2 = t.cam[2].z();
 			
 			// Work out the depth at the point P
-			float depthP = 0.f;
+			float depthP = 1.0f / (b0 / depth0 + b1 / depth1 + b2 / depth2);
 
 			// Interpolate to find the world-space position of this pixel (correct this version to be 
 			// perspective-correct).
 			// Don't forget to multiply by depthP!
-			Eigen::Vector3f worldP = Eigen::Vector3f::Zero();
+			Eigen::Vector3f worldP = (t.verts[0] * (b0 / depth0) + t.verts[1] * (b1 / depth1) + t.verts[2] *( b2 / depth2)) * depthP;
 
 			// Interpolate to find the normal of this pixel (correct this version to be 
 			// perspective-correct).
 			// Tip: you don't need to worry about multiplying by depthP - you'll normalise this anyway!
-			Eigen::Vector3f normP = Eigen::Vector3f::Zero();
+			Eigen::Vector3f normP = (t.norms[0] * (b0 / depth0) + t.norms[1] * (b1 / depth1) + t.norms[2] * (b2 / depth2)).normalized();
 
 			// Interpolate to find the correct clip-space depth (correct this version to be perspective-correct)
 			// This won't make too much of a difference in this case, but technically this version does use slightly
 			// incorrect depths.
-			float depth = 0.f;
+			float depth = depthP;
 			// *** END YOUR CODE ***
 
 			int depthIdx = static_cast<int>(p.x()) + static_cast<int>(p.y()) * width;
@@ -277,7 +280,7 @@ int drawScene(const std::string& outputFilename, ShadingMode mode, float specula
 	for (int r = 0; r < height; ++r) {
 		for (int c = 0; c < width; ++c) {
 			setPixel(imageBuffer, c, r, width, height, black);
-			zBuffer[r * width + c] = 1.0f;
+			zBuffer[r * width + c] = std::numeric_limits<float>::max();;
 		}
 	}
 

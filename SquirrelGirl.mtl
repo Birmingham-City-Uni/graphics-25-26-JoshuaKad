@@ -1,0 +1,162 @@
+# Blender 5.0.0 MTL File: 'SquirrelGirl.blend'
+# www.blender.org
+
+newmtl MI_1032001_Body
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+illum 2
+map_Kd C:/Users/Joshua/Downloads/squirrel-girl-marvel-rivals/textures/T_1032001_Body_D.png
+map_d C:/Users/Joshua/Downloads/squirrel-girl-marvel-rivals/textures/T_1032001_Body_D.png
+
+newmtl MI_1032001_Equip_01
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+illum 2
+map_Kd C:/Users/Joshua/Downloads/squirrel-girl-marvel-rivals/textures/T_1032001_Equip_01_D.png
+map_d C:/Users/Joshua/Downloads/squirrel-girl-marvel-rivals/textures/T_1032001_Equip_01_D.png
+
+newmtl MI_1032001_Equip_02
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+illum 2
+map_Kd C:/Users/Joshua/Downloads/squirrel-girl-marvel-rivals/textures/T_1032001_Equip_02_D.png
+map_d C:/Users/Joshua/Downloads/squirrel-girl-marvel-rivals/textures/T_1032001_Equip_02_D.png
+
+newmtl MI_1032001_Equip_03
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+illum 2
+map_Kd C:/Users/Joshua/Downloads/squirrel-girl-marvel-rivals/textures/T_1032001_Equip_04_D.png
+map_d C:/Users/Joshua/Downloads/squirrel-girl-marvel-rivals/textures/T_1032001_Equip_04_D.png
+
+newmtl MI_1032001_Equip_04
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+illum 2
+map_Kd C:/Users/Joshua/Downloads/squirrel-girl-marvel-rivals/textures/T_1032001_Equip_04_D.png
+map_d C:/Users/Joshua/Downloads/squirrel-girl-marvel-rivals/textures/T_1032001_Equip_04_D.png
+
+newmtl MI_1032001_Eyes_01
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+illum 2
+map_Kd C:/Users/Joshua/Downloads/squirrel-girl-marvel-rivals/textures/T_1032001_Eyes_01_D.png
+map_d C:/Users/Joshua/Downloads/squirrel-girl-marvel-rivals/textures/T_1032001_Eyes_01_D.png
+
+newmtl MI_1032001_Eyes_02
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+illum 2
+map_Kd C:/Users/Joshua/Downloads/squirrel-girl-marvel-rivals/textures/T_1032001_Eyes_01_D.png
+map_d C:/Users/Joshua/Downloads/squirrel-girl-marvel-rivals/textures/T_1032001_Eyes_01_D.png
+
+newmtl MI_1032001_Eyes_03
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+illum 2
+map_Kd C:/Users/Joshua/Downloads/squirrel-girl-marvel-rivals/textures/T_1032001_Equip_03_D.png
+map_d C:/Users/Joshua/Downloads/squirrel-girl-marvel-rivals/textures/T_1032001_Equip_03_D.png
+
+newmtl MI_1032001_Hair_01
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+illum 2
+map_Kd C:/Users/Joshua/Downloads/squirrel-girl-marvel-rivals/textures/T_1032001_Hair_01_D.png
+map_d C:/Users/Joshua/Downloads/squirrel-girl-marvel-rivals/textures/T_1032001_Hair_01_D.png
+
+newmtl MI_1032001_Hair_02
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+illum 2
+map_Kd C:/Users/Joshua/Downloads/squirrel-girl-marvel-rivals/textures/T_1032001_Hair_01_D.png
+map_d C:/Users/Joshua/Downloads/squirrel-girl-marvel-rivals/textures/T_1032001_Hair_01_D.png
+
+newmtl MI_1032001_Hair_03
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+illum 2
+map_Kd C:/Users/Joshua/Downloads/squirrel-girl-marvel-rivals/textures/T_1032001_Hair_01_D.png
+map_d C:/Users/Joshua/Downloads/squirrel-girl-marvel-rivals/textures/T_1032001_Hair_01_D.png
+
+newmtl MI_1032001_Hair_04
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+illum 2
+map_Kd C:/Users/Joshua/Downloads/squirrel-girl-marvel-rivals/textures/T_1032001_Hair_01_D.png
+map_d C:/Users/Joshua/Downloads/squirrel-girl-marvel-rivals/textures/T_1032001_Hair_01_D.png
+
+newmtl MI_1032001_Head
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+illum 2
+map_Kd C:/Users/Joshua/Downloads/squirrel-girl-marvel-rivals/textures/T_1032001_Head_D.png
+map_d C:/Users/Joshua/Downloads/squirrel-girl-marvel-rivals/textures/T_1032001_Head_D.png
+
+newmtl MI_1032001_Tooth
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+illum 2
+map_Kd C:/Users/Joshua/Downloads/squirrel-girl-marvel-rivals/textures/T_Common_Tooth_D.png
+map_d C:/Users/Joshua/Downloads/squirrel-girl-marvel-rivals/textures/T_Common_Tooth_D.png
+
+newmtl MI_1032001_Tooth.001
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+
+newmtl MI_1032001_Weapon
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+illum 2
+map_Kd C:/Users/Joshua/Downloads/squirrel-girl-marvel-rivals/textures/T_1032001_Weapon_D.png
+map_d C:/Users/Joshua/Downloads/squirrel-girl-marvel-rivals/textures/T_1032001_Weapon_D.png

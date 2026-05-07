@@ -13,6 +13,7 @@ add_executable(rasteriser
     Light.hpp
     LinAlg.hpp
     Image.hpp
+    Shading.hpp
 )
 
 
